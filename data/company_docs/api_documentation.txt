@@ -1,0 +1,58 @@
+API Documentation - AI Assistant Pro
+
+Authentication
+-------------
+All API requests require authentication using Bearer tokens. To obtain a token:
+1. Log in to the Developer Portal
+2. Generate an API key in the Settings section
+3. Use the key in the Authorization header:
+   Authorization: Bearer <your_api_key>
+
+Endpoints
+---------
+1. Query Endpoint
+POST /api/v1/query
+- Purpose: Send queries to the AI assistant
+- Request body:
+  {
+    "query": "string",
+    "context": "string" (optional),
+    "language": "string" (default: "en")
+  }
+- Response:
+  {
+    "answer": "string",
+    "confidence": float,
+    "sources": array
+  }
+
+2. Knowledge Base Management
+POST /api/v1/kb/document
+- Purpose: Add documents to knowledge base
+- Request body:
+  {
+    "content": "string",
+    "metadata": object,
+    "tags": array
+  }
+
+GET /api/v1/kb/search
+- Purpose: Search knowledge base
+- Query parameters:
+  - q: search query
+  - limit: max results (default: 10)
+  - offset: pagination offset
+
+Rate Limits
+-----------
+- Basic: 1000 requests/day
+- Professional: 5000 requests/day
+- Enterprise: Customizable
+
+Error Codes
+-----------
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 429: Rate Limit Exceeded
+- 500: Internal Server Error
