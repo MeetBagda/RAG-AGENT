@@ -36,39 +36,18 @@ if 'qa_system' not in st.session_state:
 # Configure Streamlit
 st.set_page_config(
     page_title="AI Knowledge Assistant",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    layout="centered"
 )
 
-def initialize_qa_system(force_retrain=False):
+def initialize_qa_system():
     """Initialize the QA system"""
     try:
         doc_processor = DocumentProcessor()
         vector_store = VectorStore()
         
-        # Add debug info to sidebar
-        with st.sidebar:
-            st.write("### System Status")
-            st.write("Checking document processing...")
-        
-        if force_retrain or not vector_store.load_vector_store():
-            with st.spinner("Processing documents..."):
-                documents = doc_processor.process_documents()
-                # Show document processing stats in sidebar
-                with st.sidebar:
-                    st.write(f"Documents loaded: {len(documents)}")
-                    # Group documents by source
-                    sources = {}
-                    for doc in documents:
-                        filename = doc.metadata['filename']
-                        if filename not in sources:
-                            sources[filename] = 0
-                        sources[filename] += 1
-                    st.write("### Document Sources:")
-                    for filename, count in sources.items():
-                        st.write(f"- {filename}: {count} chunks")
-                
-                vector_store.create_vector_store(documents)
+        with st.spinner("Processing documents..."):
+            documents = doc_processor.process_documents()
+            vector_store.create_vector_store(documents)
         
         return QAAgent(vector_store)
     except Exception as e:
@@ -79,18 +58,10 @@ def main():
     st.title("AI Knowledge Assistant")
     st.write("Ask me anything about the documents in the knowledge base!")
 
-    # Add retrain button in sidebar
-    with st.sidebar:
-        if st.button("Force Retrain"):
-            st.session_state['qa_system'] = None
-            st.experimental_rerun()
-
     # Initialize QA system if not already done
     if st.session_state['qa_system'] is None:
         with st.spinner("Loading AI model and knowledge base..."):
-            st.session_state['qa_system'] = initialize_qa_system(
-                force_retrain='qa_system' in st.session_state
-            )
+            st.session_state['qa_system'] = initialize_qa_system()
 
     # Create the query input if system is initialized
     if st.session_state['qa_system']:
