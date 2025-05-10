@@ -2,10 +2,8 @@
 
 A Retrieval-Augmented Generation (RAG) based Q&A system that provides accurate answers by combining document retrieval with state-of-the-art language models. This system is designed to efficiently process and answer questions about company documentation, FAQs, and technical specifications.
 
-![image](https://github.com/user-attachments/assets/f49347a6-c06f-4486-b971-7b5bcf20b918)
-![Screenshot 2025-05-09 205124](https://github.com/user-attachments/assets/f26ee795-e04e-491f-9b9d-5d5e3f2f625a)
-![image](https://github.com/user-attachments/assets/3c19f83e-2cde-4c54-b5af-e9e872f0d620)
-![image](https://github.com/user-attachments/assets/0c9b308c-dd69-4d2d-9ce4-3a1dfadc449a)
+![image](https://github.com/user-attachments/assets/db4b4c7e-1ef4-4b0c-947e-d2cab4bb2c1f)
+![image](https://github.com/user-attachments/assets/0e9cfa3c-77b4-407d-8da2-fa7cf04dabdf)
 
 
 ## Features
