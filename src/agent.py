@@ -35,15 +35,53 @@ class QAAgent:
             Answer in a natural, conversational way:"""
         )
 
+    def _word_to_number(self, word: str) -> str:
+        """Convert word numbers to digits"""
+        word = word.lower().strip()
+        number_mapping = {
+            'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
+            'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
+            'ten': '10', 'eleven': '11', 'twelve': '12', 'thirteen': '13',
+            'fourteen': '14', 'fifteen': '15', 'sixteen': '16', 'seventeen': '17',
+            'eighteen': '18', 'nineteen': '19', 'twenty': '20',
+            'plus': '+', 'minus': '-', 'times': '*', 'multiplied by': '*',
+            'divided by': '/', 'over': '/'
+        }
+        return number_mapping.get(word, word)
+
     def _calculate(self, expression: str) -> str:
         """Handle mathematical calculations"""
         try:
             # Extract numbers and operator from the expression
             expression = expression.replace('calculate', '').strip()
-            # Clean and validate the expression
-            if not re.match(r'^[\d\s\+\-\*\/\(\)\.]+$', expression):
-                return "Invalid calculation expression. Please use only numbers and basic operators (+, -, *, /)."
+            
+            # Convert words to numbers/operators
+            words = expression.lower().split()
+            converted = []
+            i = 0
+            while i < len(words):
+                # Handle two-word operators
+                if i < len(words) - 1 and f"{words[i]} {words[i+1]}" in ["multiplied by", "divided by"]:
+                    converted.append(self._word_to_number(f"{words[i]} {words[i+1]}"))
+                    i += 2
+                else:
+                    converted.append(self._word_to_number(words[i]))
+                    i += 1
+            
+            # Join and clean the expression
+            expression = ' '.join(converted)
+            # Remove any remaining text and clean up spacing
+            expression = re.sub(r'[^0-9\+\-\*\/\(\)\.\s]', '', expression)
+            expression = re.sub(r'\s+', '', expression)
+            
+            # Validate the expression
+            if not re.match(r'^[\d\+\-\*\/\(\)\.]+$', expression):
+                return "Invalid calculation expression. Please use numbers and basic operators (+, -, *, /)."
+            
             result = eval(expression)
+            # Format the result to handle floating point precision
+            if isinstance(result, float):
+                result = round(result, 4)
             return f"The result of {expression} is {result}"
         except Exception as e:
             return f"Sorry, I couldn't perform that calculation. Please check your expression."
@@ -51,8 +89,16 @@ class QAAgent:
     def _define(self, word: str) -> str:
         """Look up word definitions using a dictionary API"""
         try:
-            # Using Free Dictionary API
-            word = word.replace('define', '').strip()
+            # Remove dictionary-related keywords and clean the word
+            word = word.lower()
+            dictionary_keywords = ['define', 'explain', 'what is', 'tell me about', 'describe', 'meaning of', 'define the term', 'define the word']
+            for keyword in dictionary_keywords:
+                word = word.replace(keyword, '').strip()
+            
+            # Remove any remaining articles or common words
+            word = re.sub(r'^(a |an |the |what |is |are )', '', word).strip()
+            
+            # Make the API call
             response = requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}")
             if response.status_code == 200:
                 data = response.json()[0]
@@ -62,27 +108,47 @@ class QAAgent:
         except Exception as e:
             return f"Sorry, I couldn't look up that word. Please try again."
 
-    def _preprocess_query(self, query: str) -> str:
-        """Preprocess the query to handle different phrasings"""
+    def _preprocess_query(self, query: str) -> tuple:
+        """Preprocess the query and determine the appropriate tool"""
         query = query.lower().strip()
-        if query.startswith("tell me"):
-            query = query.replace("tell me", "what is", 1)
-        if not query.endswith("?") and not any(x in query for x in ["calculate", "define"]):
+        
+        # Check for calculation
+        if "calculate" in query:
+            return query, "calculator"
+            
+        # Check for definition-like queries
+        definition_patterns = [
+            r'^define\s+',
+            r'^explain\s+',
+            r'^what\s+is\s+',
+            r'^what\s+are\s+',
+            r'^tell\s+me\s+about\s+',
+            r'^describe\s+',
+            r'^meaning\s+of\s+'
+        ]
+        
+        for pattern in definition_patterns:
+            if re.match(pattern, query):
+                return query, "dictionary"
+        
+        # For general queries, add question mark if missing
+        if not query.endswith("?"):
             query += "?"
-        return query
+        return query, "search"
 
     def process_query(self, query: str) -> dict:
         """Process user query and generate response"""
         try:
-            processed_query = self._preprocess_query(query)
+            # Preprocess the query and determine tool
+            processed_query, tool = self._preprocess_query(query)
             
-            # Route to appropriate tool based on keywords
-            if "calculate" in processed_query:
+            # Route to appropriate tool
+            if tool == "calculator":
                 return {
                     "tool_used": "Calculator",
                     "answer": self._calculate(processed_query)
                 }
-            elif "define" in processed_query:
+            elif tool == "dictionary":
                 return {
                     "tool_used": "Dictionary",
                     "answer": self._define(processed_query)
