@@ -11,3 +11,4 @@ python-dotenv>=1.0.0
 nest-asyncio>=1.5.8
 accelerate>=0.27.0
 sentencepiece>=0.1.99
+requests>=2.31.0
