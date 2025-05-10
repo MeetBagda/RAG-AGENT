@@ -4,6 +4,7 @@ A Retrieval-Augmented Generation (RAG) based Q&A system that provides accurate a
 
 ![image](https://github.com/user-attachments/assets/db4b4c7e-1ef4-4b0c-947e-d2cab4bb2c1f)
 ![image](https://github.com/user-attachments/assets/0e9cfa3c-77b4-407d-8da2-fa7cf04dabdf)
+![image](https://github.com/user-attachments/assets/85fca736-6ef6-4bc2-917f-d17f0ac33f47)
 
 
 ## Features
